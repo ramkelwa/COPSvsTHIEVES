@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #04060d;
+  --color-ink-900: #070b16;
+  --color-ink-850: #0a1120;
+  --color-ink-800: #0d1526;
+  --color-ink-700: #142137;
+  --color-brand: #22d3ee;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-ink-950 text-slate-100 antialiased;
+    background-image:
+      radial-gradient(60rem 40rem at 110% -10%, rgba(34, 211, 238, 0.08), transparent 60%),
+      radial-gradient(50rem 30rem at -10% 110%, rgba(34, 197, 94, 0.06), transparent 60%);
+    background-attachment: fixed;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: rgba(34, 211, 238, 0.3);
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply border border-white/10 bg-white/[0.04] backdrop-blur;
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Leaflet tuning for the dark tactical UI */
+.leaflet-container {
+  background: #0a1120;
+  font-family: inherit;
+  z-index: 0;
+}
+.leaflet-control-attribution {
+  background: rgba(4, 6, 13, 0.75) !important;
+  color: #94a3b8 !important;
+  font-size: 10px !important;
+}
+.leaflet-control-attribution a {
+  color: #cbd5e1 !important;
+}
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background: #0d1526 !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #0d1526;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+.leaflet-popup-content {
+  margin: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.leaflet-popup-content strong {
+  font-size: 13px;
+}
+
+/* Player markers (built with L.divIcon, so plain CSS is used) */
+.cvt-marker-wrap {
+  background: transparent;
+  border: 0;
+}
+.cvt-marker {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  font-size: 15px;
+  line-height: 1;
+  box-shadow:
+    0 0 0 4px rgba(0, 0, 0, 0.35),
+    0 6px 16px rgba(0, 0, 0, 0.45);
+}
+.cvt-marker--self {
+  background: #0891b2;
+  animation: cvt-self-pulse 2.4s ease-out infinite;
+}
+.cvt-marker--police {
+  background: #1d4ed8;
+}
+.cvt-marker--thief {
+  background: #15803d;
+}
+.cvt-marker--unknown {
+  background: #334155;
+}
+.cvt-marker--decoy {
+  background: #7c3aed;
+}
+.cvt-marker--stale {
+  opacity: 0.72;
+}
+@keyframes cvt-self-pulse {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(34, 211, 238, 0.55),
+      0 6px 16px rgba(0, 0, 0, 0.45);
+  }
+  70% {
+    box-shadow:
+      0 0 0 14px rgba(34, 211, 238, 0),
+      0 6px 16px rgba(0, 0, 0, 0.45);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(34, 211, 238, 0),
+      0 6px 16px rgba(0, 0, 0, 0.45);
+  }
+}
