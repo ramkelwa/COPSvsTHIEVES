@@ -35,10 +35,9 @@ This is a complete web implementation — not a mock, not a static prototype. Tw
 - **Web stack, not React Native/Android.** The brief allowed "React Native or an appropriate Android
   implementation"; this is a mobile-first responsive web app using the HTML5 Geolocation API. It works in mobile
   browsers today. No native background tracking is claimed or pretended.
-- **JWT auth, not Firebase Auth**, and a **JSON store**, not PostgreSQL/PostGIS. The brief listed alternatives; the
-  project keeps one consistent stack and documents the Postgres migration path in `SERVER_SETUP.md`. All
-  geospatial validation is done with server-side math (`server/src/geo.ts`), so swapping the store does not change
-  game rules.
+- **JWT auth, not Firebase Auth.** Local development uses a **JSON store**; production supports PostgreSQL for
+  accounts, stats, history, and results. Active rooms and live game state remain in server memory, so run one
+  backend instance. Geospatial validation uses server-side math (`server/src/geo.ts`).
 - **Capture is server-authoritative after validation**, not a two-sided confirmation dialog. Both players' fresh
   GPS fixes must pass accuracy and distance checks on the server, which prevents fake captures without letting a
   caught thief stall the game by refusing to confirm. The result is broadcast to everyone.
@@ -64,7 +63,7 @@ This is a complete web implementation — not a mock, not a static prototype. Tw
 │  game/engine.ts   authoritative rooms, cooldowns, capture,     │
 │                   boundary tick, win conditions, serialization │
 │  geo.ts        haversine, point-in-polygon, boundary distance  │
-│  store.ts      JSON persistence: users, stats, history, results│
+│  store.ts      PostgreSQL in production, JSON in local dev     │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -142,8 +141,29 @@ npm run build               # server tsc → server/dist, client tsc+vite → cl
 NODE_ENV=production npm start
 ```
 
-The server serves `client/dist` when it exists, so a single process serves API, WebSocket and the SPA.
-Set `JWT_SECRET`, `CLIENT_ORIGIN` (your public origin) and put it behind HTTPS.
+The server serves `client/dist` when it exists, so a single process can serve API, WebSocket and the SPA.
+Set `JWT_SECRET`, `CLIENT_ORIGIN` (the frontend origin) and `DATABASE_URL` in production.
+
+### Deploy with Vercel + Render
+
+The client and API are separate deployments. The Render service must have PostgreSQL configured before it starts;
+production startup fails if `DATABASE_URL` is missing.
+
+1. Create a PostgreSQL database in Render.
+2. Deploy the repository to Render as a Node web service from the repository root:
+   - Build command: `npm install && npm run build -w server`
+   - Start command: `npm run start -w server`
+   - Set `NODE_ENV=production`, `JWT_SECRET` to a long random secret, `DATABASE_URL` to the database's internal
+     connection string, and `CLIENT_ORIGIN` to your Vercel site's exact `https://...vercel.app` origin.
+   - Leave `DATABASE_SSL` unset for Render's internal database URL. Set it to `true` only if your database provider
+     requires TLS.
+3. Deploy the `client` directory to Vercel with build command `npm run build` and output directory `dist`.
+   Set `VITE_API_URL` to the Render service origin (for example `https://your-service.onrender.com`) before building.
+4. If the Vercel domain changes, update `CLIENT_ORIGIN` on Render and redeploy the backend.
+
+The browser connects directly to Render for REST and Socket.IO; Vercel serves the frontend. PostgreSQL persists
+accounts and finished match data, but live rooms are in memory and will end if the Render service restarts. Data in
+the old local JSON file is not automatically imported into PostgreSQL.
 
 ### Verification commands
 
@@ -169,13 +189,16 @@ thief's payload never contains live police coordinates.
 | `JWT_SECRET` | random per boot | Set it in production or sessions die on restart |
 | `JWT_EXPIRES_IN` | `7d` | |
 | `CLIENT_ORIGIN` | `http://localhost:5173` | comma-separated dev origins |
-| `DATA_DIR` | `server/data` | JSON store location |
-| `NODE_ENV` | development | `production` enables same-origin CORS |
+| `DATABASE_URL` | unset | Required in production; PostgreSQL connection string |
+| `DATABASE_SSL` | false | Set `true` if the database provider requires SSL |
+| `DATA_DIR` | `server/data` | Local JSON store location when `DATABASE_URL` is unset |
+| `NODE_ENV` | development | Production mode |
 
 ### Client (`client/.env`)
 
 | Variable | Default | Notes |
 | --- | --- | --- |
+| `VITE_API_URL` | same origin | Backend origin; set to the Render service URL in production |
 | `VITE_MAP_TILE_URL` | OpenStreetMap | any raster tile template |
 | `VITE_MAP_ATTRIBUTION` | OSM attribution | keep attribution correct |
 

@@ -4,7 +4,7 @@
 
 - Node.js v20+ (recommended)
 - npm or yarn
-- PostgreSQL (optional - JSON file store used by default)
+- PostgreSQL (required in production; local development can use JSON)
 - Map API keys (Google Maps or Mapbox - optional for demo)
 
 ## Installation
@@ -48,14 +48,17 @@ NODE_ENV=development
 
 **Important**: Set `JWT_SECRET` to a stable value for persistent sessions across restarts. If not set, a random secret is generated each restart.
 
-### 4. Data directory
+### 4. Local data
 
-The server uses a local JSON file for persistence by default. No database setup required for basic operation.
+Without `DATABASE_URL`, local development uses a JSON file for persistence. In production, set `DATABASE_URL` to a
+PostgreSQL connection string; startup fails if it is missing.
 
 ```bash
-# The data directory will be created automatically
-# server/data/db.json stores users, history, and results
+# server/data/db.json stores local users, history, and results
 ```
+
+PostgreSQL tables are created automatically on startup. The database persists accounts, stats, history, and results;
+active game rooms stay in server memory and are lost when the process restarts.
 
 ### 5. Run the server
 

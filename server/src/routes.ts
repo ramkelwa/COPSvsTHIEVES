@@ -65,7 +65,7 @@ const apiLimiter = rateLimit({ windowMs: 60_000, max: 240 });
 
 // ---------- Auth ----------
 
-router.post("/auth/register", authLimiter, async (req, res) => {
+router.post("/auth/register", authLimiter, async (req, res, next) => {
   const parsed = credentialsSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Invalid input" });
@@ -84,6 +84,12 @@ router.post("/auth/register", authLimiter, async (req, res) => {
     createdAt: Date.now(),
     stats: { gamesPlayed: 0, wins: 0, captures: 0, distanceM: 0, survivalMs: 0 },
   });
+  try {
+    await store.flush();
+  } catch (err) {
+    next(err);
+    return;
+  }
   res.status(201).json({ token: signToken(user), user: toPublicUser(user) });
 });
 
@@ -107,7 +113,7 @@ router.get("/me", requireAuth, (req: AuthedRequest, res) => {
   res.json({ user: toPublicUser(req.user!) });
 });
 
-router.patch("/me", requireAuth, (req: AuthedRequest, res) => {
+router.patch("/me", requireAuth, async (req: AuthedRequest, res, next) => {
   const parsed = z
     .object({
       username: z
@@ -135,6 +141,12 @@ router.patch("/me", requireAuth, (req: AuthedRequest, res) => {
     ...(parsed.data.username ? { username: parsed.data.username } : {}),
     ...(parsed.data.avatar ? { avatar: parsed.data.avatar } : {}),
   });
+  try {
+    await store.flush();
+  } catch (err) {
+    next(err);
+    return;
+  }
   res.json({ user: toPublicUser(updated!) });
 });
 

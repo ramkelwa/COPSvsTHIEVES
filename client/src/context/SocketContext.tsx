@@ -15,6 +15,7 @@ interface SocketContextValue {
 }
 
 const SocketContext = createContext<SocketContextValue | null>(null);
+const SOCKET_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 
 export function useSocket(): SocketContextValue {
   const ctx = useContext(SocketContext);
@@ -37,7 +38,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       setConnected(false);
       return;
     }
-    const next = io({
+    const next = io(SOCKET_URL || undefined, {
       auth: { token },
       transports: ["websocket"],
       reconnectionAttempts: Infinity,

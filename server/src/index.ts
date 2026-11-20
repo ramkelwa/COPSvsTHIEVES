@@ -9,13 +9,14 @@ import { config } from "./config.js";
 import { engine } from "./game/engine.js";
 import { initRealtime } from "./realtime.js";
 import routes from "./routes.js";
+import { store } from "./store.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 app.use(
   cors({
-    origin: config.isProd ? true : config.clientOrigins,
+    origin: config.clientOrigins,
     credentials: true,
   }),
 );
@@ -53,26 +54,41 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: config.isProd ? true : config.clientOrigins,
+    origin: config.clientOrigins,
     credentials: true,
   },
   pingInterval: 20_000,
   pingTimeout: 20_000,
 });
 
-initRealtime(io);
-engine.startTicking();
+async function start() {
+  await store.initialize();
+  initRealtime(io);
+  engine.startTicking();
+  server.listen(config.port, () => {
+    console.log(`[server] Cops vs Thieves API listening on port ${config.port}`);
+    console.log(`[server] allowed client origins: ${config.clientOrigins.join(", ")}`);
+  });
+}
 
-server.listen(config.port, () => {
-  console.log(`[server] Cops vs Thieves API listening on http://localhost:${config.port}`);
-  console.log(`[server] allowed client origins: ${config.isProd ? "*" : config.clientOrigins.join(", ")}`);
+void start().catch((err: unknown) => {
+  console.error("[server] failed to initialize", err);
+  process.exitCode = 1;
 });
 
 function shutdown(signal: string) {
   console.log(`\n[server] ${signal} received, shutting down`);
   engine.stopTicking();
   io.close();
-  server.close(() => process.exit(0));
+  server.close(() => {
+    void store.close().then(
+      () => process.exit(0),
+      (err: unknown) => {
+        console.error("[store] failed to flush on shutdown", err);
+        process.exit(1);
+      },
+    );
+  });
   setTimeout(() => process.exit(0), 3000).unref();
 }
 process.on("SIGINT", () => shutdown("SIGINT"));

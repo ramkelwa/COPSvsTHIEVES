@@ -19,6 +19,7 @@ export class ApiError extends Error {
 }
 
 const TOKEN_KEY = "cvt.token";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 
 export const tokenStore = {
   get(): string | null {
@@ -61,7 +62,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   let res: Response;
   try {
-    res = await fetch(`/api${path}`, {
+    res = await fetch(`${API_BASE_URL}/api${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
