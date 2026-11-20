@@ -81,16 +81,41 @@ export const GEO_OPTIONS: PositionOptions = {
   timeout: 20_000,
 };
 
-/** One-shot high-accuracy fix used by the accuracy screen. */
+const GPS_ACCURACY_TARGET_M = 50;
+
+/** Collect updates until a usable fix arrives or the location request times out. */
 export function requestFix(options: PositionOptions = GEO_OPTIONS): Promise<GeoFix> {
   return new Promise((resolve, reject) => {
     if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
       reject(new Error("Geolocation is not supported by this browser."));
       return;
     }
-    navigator.geolocation.getCurrentPosition(
-      (position) => resolve(toFix(position)),
-      (error) => reject(new Error(geoErrorMessage(error))),
+
+    let bestFix: GeoFix | null = null;
+    let watchId: number | null = null;
+    let settled = false;
+    const timeoutMs = options.timeout ?? GEO_OPTIONS.timeout ?? 20_000;
+    const timer = window.setTimeout(
+      () => finish(new Error("Getting a GPS fix timed out. Move to open sky and try again.")),
+      timeoutMs,
+    );
+
+    const finish = (error?: Error) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+      if (bestFix) resolve(bestFix);
+      else reject(error ?? new Error("Could not get a GPS fix."));
+    };
+
+    watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const fix = toFix(position);
+        if (!bestFix || fix.accuracy < bestFix.accuracy) bestFix = fix;
+        if (bestFix.accuracy <= GPS_ACCURACY_TARGET_M) finish();
+      },
+      (error) => finish(new Error(geoErrorMessage(error))),
       options,
     );
   });

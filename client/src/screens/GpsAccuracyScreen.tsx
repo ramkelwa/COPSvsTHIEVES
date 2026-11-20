@@ -94,7 +94,7 @@ export function GpsAccuracyScreen() {
     <div className="mx-auto max-w-lg">
       <PageHeader
         title="GPS accuracy check"
-        subtitle="A fair match needs a usable fix. Stand still in open sky for the best result."
+        subtitle="A fair match needs a usable fix. Stand still outdoors while we look for your best location."
       />
 
       <Card>
@@ -121,6 +121,13 @@ export function GpsAccuracyScreen() {
                 — {passes ? "passes" : "too poor to start"}
               </span>
             </div>
+            {!passes && (
+              <div className="mx-auto mt-3 max-w-sm rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-left text-xs leading-relaxed text-amber-100">
+                Your device is only reporting an approximate location. On a phone, enable Precise/Exact Location
+                for this site and try outdoors with Battery Saver off. Many laptops have no GPS receiver and may
+                not reach this threshold; use a phone with precise location enabled.
+              </div>
+            )}
             <div className="mt-3 text-[11px] text-slate-500">
               {saveState === "saving" && "Saving check to the lobby…"}
               {saveState === "saved" && "Check saved. The host can now start once everyone passes."}
