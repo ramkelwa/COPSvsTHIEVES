@@ -89,6 +89,15 @@ export function PoliceDashboard({
         </div>
 
         <Card className="p-3">
+          <div className="mb-2 flex items-center justify-between px-1">
+            <span className="font-display text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500">
+              Tactical map
+            </span>
+            <span className="flex items-center gap-1.5 rounded border border-cyan-400/25 bg-cyan-500/10 px-1.5 py-0.5">
+              <span className="h-1 w-1 animate-pulse rounded-full bg-cyan-300" />
+              <span className="font-display text-[8px] font-bold uppercase tracking-[0.16em] text-cyan-200">live</span>
+            </span>
+          </div>
           <GameMap
             center={mapCenter}
             zoom={focus ? 17 : 16}
@@ -122,7 +131,9 @@ export function PoliceDashboard({
 
           {intel.length === 0 ? (
             <div className="mt-3 rounded-xl border border-dashed border-white/10 bg-ink-900/40 px-4 py-6 text-center">
-              <p className="text-sm text-slate-300">No thief positions yet.</p>
+              <p className="font-display text-[11px] font-bold uppercase tracking-[0.1em] text-slate-300">
+                No thief positions yet
+              </p>
               <p className="mt-1 text-xs text-slate-500">
                 Press Scan to reveal every active thief's latest reported position. Positions are snapshots, not live
                 tracking.
@@ -140,7 +151,9 @@ export function PoliceDashboard({
                       focusId === thief.id ? "border-cyan-500/40 bg-cyan-500/[0.06]" : "border-white/5 bg-ink-900/50"
                     }`}
                   >
-                    <span className="grid h-8 w-8 place-items-center rounded-full bg-white/5 text-base">{thief.avatar}</span>
+                    <span className="grid h-8 w-8 place-items-center rounded-full border border-emerald-400/25 bg-emerald-500/10 text-base">
+                      {thief.avatar}
+                    </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <button
@@ -182,10 +195,26 @@ export function PoliceDashboard({
 
       <div className="space-y-4">
         <Card>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Actions</h2>
-          <Button className="mt-3 w-full" onClick={onScan} disabled={scanning || scanIn > 0}>
-            {scanning ? "Scanning…" : scanIn > 0 ? `Scan ready in ${formatClock(scanIn)}` : "📡 Scan for thieves"}
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+              Actions
+            </h2>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.9)]" />
+              <span className="font-display text-[8px] font-bold uppercase tracking-[0.18em] text-blue-300">
+                Police uplink
+              </span>
+            </span>
+          </div>
+          <Button className="mt-3 w-full" size="lg" onClick={onScan} disabled={scanning || scanIn > 0}>
+            {scanning ? "Scanning…" : scanIn > 0 ? `Scan in ${formatClock(scanIn)}` : "📡 Scan for thieves"}
           </Button>
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(90deg,#22d3ee,#a3ff5e)] transition-[width] duration-300"
+              style={{ width: `${100 - Math.min(100, (scanIn / (room.settings.scanCooldownSec * 1000)) * 100)}%` }}
+            />
+          </div>
           {room.settings.radar && (
             <Button
               className="mt-2 w-full"
@@ -201,7 +230,9 @@ export function PoliceDashboard({
             </Button>
           )}
           {captureIn > 0 && (
-            <p className="mt-2 text-center text-[11px] text-slate-500">Capture cooldown {formatClock(captureIn)}</p>
+            <p className="mt-2 text-center font-mono text-[10px] uppercase tracking-wide text-slate-500">
+              Capture cooldown {formatClock(captureIn)}
+            </p>
           )}
           <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
             {me?.location

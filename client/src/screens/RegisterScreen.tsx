@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/Button";
+import { Brand } from "../components/Brand";
 import { Input } from "../components/Input";
 import { Alert, Card, Field } from "../components/ui";
 
@@ -35,15 +36,15 @@ export function RegisterScreen() {
   return (
     <div className="flex min-h-dvh items-center justify-center px-4 py-10">
       <div className="w-full max-w-sm">
-        <Link to="/" className="mb-6 flex items-center justify-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-500 text-xs font-black text-ink-950">
-            CVT
-          </span>
-          <span className="text-sm font-bold tracking-wide text-white">Cops vs Thieves</span>
-        </Link>
-        <Card>
-          <h1 className="text-xl font-bold text-white">Create your player</h1>
-          <p className="mt-1 text-sm text-slate-400">Your username and avatar appear on the map.</p>
+        <div className="mb-7 flex justify-center">
+          <Brand />
+        </div>
+        <Card className="animate-rise">
+          <p className="font-display text-[9px] font-bold uppercase tracking-[0.3em] text-acid/80">
+            // New recruit
+          </p>
+          <h1 className="font-display mt-2 text-xl font-bold uppercase tracking-[0.04em] text-white">Create your player</h1>
+          <p className="mt-1.5 text-sm text-slate-400">Your username and avatar appear on the map.</p>
 
           {error && (
             <Alert tone="error" className="mt-4">
@@ -79,9 +80,9 @@ export function RegisterScreen() {
                     key={option}
                     type="button"
                     onClick={() => setAvatar(option)}
-                    className={`grid aspect-square place-items-center rounded-lg border text-lg transition-colors ${
+                    className={`grid aspect-square place-items-center rounded-lg border text-lg transition-all ${
                       avatar === option
-                        ? "border-cyan-400/70 bg-cyan-500/15"
+                        ? "border-cyan-400/70 bg-cyan-500/15 shadow-[0_0_16px_-4px_rgba(34,211,238,0.8)]"
                         : "border-white/10 bg-ink-900/70 hover:border-white/25"
                     }`}
                     aria-label={`Avatar ${option}`}

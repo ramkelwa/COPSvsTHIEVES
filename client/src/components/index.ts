@@ -7,3 +7,4 @@ export { GameMap } from "./GameMap";
 export type { MapPlayer } from "./GameMap";
 export { EventFeed } from "./EventFeed";
 export { AppShell } from "./AppShell";
+export { Brand } from "./Brand";

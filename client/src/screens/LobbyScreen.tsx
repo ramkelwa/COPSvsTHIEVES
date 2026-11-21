@@ -161,7 +161,7 @@ export function LobbyScreen() {
         }
         actions={
           <div className="flex items-center gap-2">
-            <span className="rounded-lg border border-white/10 bg-ink-900 px-3 py-2 font-mono text-sm font-bold tracking-[0.3em] text-cyan-200">
+            <span className="font-display rounded-lg border border-cyan-400/35 bg-cyan-500/[0.08] px-3 py-2 text-sm font-bold tracking-[0.3em] text-cyan-200 shadow-[0_0_26px_-12px_rgba(34,211,238,0.9)]">
               {room.code}
             </span>
             <Button size="sm" variant="secondary" onClick={() => copy(room.code, "code")}>
@@ -207,9 +207,9 @@ export function LobbyScreen() {
                 return (
                   <li
                     key={player.id}
-                    className="flex flex-wrap items-center gap-2 rounded-xl border border-white/5 bg-ink-900/50 px-3 py-2.5"
+                    className="flex flex-wrap items-center gap-2 rounded-xl border border-white/[0.07] bg-ink-900/50 px-3 py-2.5 transition-colors hover:border-cyan-400/25"
                   >
-                    <span className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/5 text-lg">
+                    <span className="grid h-9 w-9 place-items-center rounded-full border border-white/15 bg-[linear-gradient(135deg,rgba(34,211,238,0.18),rgba(163,255,94,0.1))] text-lg">
                       {player.avatar}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -220,7 +220,8 @@ export function LobbyScreen() {
                         {!player.connected && <Badge tone="red">offline</Badge>}
                       </div>
                       <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
-                        <span className={player.ready || player.isHost ? "text-emerald-300" : ""}>
+                        <span className={`flex items-center gap-1 ${player.ready || player.isHost ? "text-emerald-300" : "text-slate-500"}`}>
+                          <span className={`h-1 w-1 rounded-full ${player.ready || player.isHost ? "bg-emerald-400" : "bg-slate-600"}`} />
                           {player.ready || player.isHost ? "Ready" : "Not ready"}
                         </span>
                         <span>·</span>

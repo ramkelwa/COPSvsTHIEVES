@@ -28,7 +28,9 @@ class Store {
 
   async initialize(): Promise<void> {
     if (!config.databaseUrl) {
-      if (config.isProd) throw new Error("DATABASE_URL is required in production.");
+      if (config.isProd && !config.hasPersistentDataDir) {
+        throw new Error("DATABASE_URL or a persistent DATA_DIR is required in production.");
+      }
       return;
     }
 

@@ -142,12 +142,12 @@ NODE_ENV=production npm start
 ```
 
 The server serves `client/dist` when it exists, so a single process can serve API, WebSocket and the SPA.
-Set `JWT_SECRET`, `CLIENT_ORIGIN` (the frontend origin) and `DATABASE_URL` in production.
+Set `JWT_SECRET` and `CLIENT_ORIGIN` (the frontend origin) in production. Configure `DATABASE_URL` for PostgreSQL, or
+use a persistent `DATA_DIR` to keep the built-in JSON store across restarts.
 
 ### Deploy with Vercel + Render
 
-The client and API are separate deployments. The Render service must have PostgreSQL configured before it starts;
-production startup fails if `DATABASE_URL` is missing.
+The client and API are separate deployments. The Render service must have PostgreSQL configured before it starts.
 
 1. Create a PostgreSQL database in Render.
 2. Deploy the repository to Render as a Node web service from the repository root:
@@ -164,6 +164,12 @@ production startup fails if `DATABASE_URL` is missing.
 The browser connects directly to Render for REST and Socket.IO; Vercel serves the frontend. PostgreSQL persists
 accounts and finished match data, but live rooms are in memory and will end if the Render service restarts. Data in
 the old local JSON file is not automatically imported into PostgreSQL.
+
+### Deploy the full app to Embarko
+
+Deploy from the repository root as a Node service. Embarko runs the root build and start scripts, serving the client,
+REST API and Socket.IO from the same origin. Its persistent `DATA_DIR` enables the JSON store when `DATABASE_URL` is
+not configured. Set a stable `JWT_SECRET` in the app's environment settings.
 
 ### Verification commands
 
@@ -189,7 +195,7 @@ thief's payload never contains live police coordinates.
 | `JWT_SECRET` | random per boot | Set it in production or sessions die on restart |
 | `JWT_EXPIRES_IN` | `7d` | |
 | `CLIENT_ORIGIN` | `http://localhost:5173` | comma-separated dev origins |
-| `DATABASE_URL` | unset | Required in production; PostgreSQL connection string |
+| `DATABASE_URL` | unset | PostgreSQL connection string; production can use a persistent `DATA_DIR` instead |
 | `DATABASE_SSL` | false | Set `true` if the database provider requires SSL |
 | `DATA_DIR` | `server/data` | Local JSON store location when `DATABASE_URL` is unset |
 | `NODE_ENV` | development | Production mode |

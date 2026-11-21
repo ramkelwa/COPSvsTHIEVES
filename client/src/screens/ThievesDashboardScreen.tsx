@@ -16,21 +16,24 @@ export interface ThievesDashboardProps {
   busyAbility: AbilityType | null;
 }
 
-const ABILITY_META: Record<AbilityType, { icon: string; label: string; desc: string }> = {
+const ABILITY_META: Record<AbilityType, { icon: string; label: string; desc: string; cooldownMs: number }> = {
   invisibility: {
     icon: "👻",
     label: "Invisibility",
     desc: "Hidden from police scans and radar for 20s.",
+    cooldownMs: 120_000,
   },
   "radar-shield": {
     icon: "🛡️",
     label: "Radar shield",
     desc: "Blocks radar detection for 60s.",
+    cooldownMs: 90_000,
   },
   decoy: {
     icon: "🎭",
     label: "Decoy",
     desc: "Leaves a fake marker at your position for 45s.",
+    cooldownMs: 120_000,
   },
 };
 
@@ -94,6 +97,17 @@ export function ThievesDashboard({ room, now, fix, onAbility, busyAbility }: Thi
         )}
 
         <Card className="p-3">
+          <div className="mb-2 flex items-center justify-between px-1">
+            <span className="font-display text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500">
+              Escape map
+            </span>
+            <span className="flex items-center gap-1.5 rounded border border-emerald-400/25 bg-emerald-500/10 px-1.5 py-0.5">
+              <span className="h-1 w-1 animate-pulse rounded-full bg-emerald-300" />
+              <span className="font-display text-[8px] font-bold uppercase tracking-[0.16em] text-emerald-200">
+                live
+              </span>
+            </span>
+          </div>
           <GameMap
             center={mapCenter}
             zoom={16}
@@ -126,7 +140,9 @@ export function ThievesDashboard({ room, now, fix, onAbility, busyAbility }: Thi
             <ul className="mt-3 space-y-2">
               {policeIntel.map((cop) => (
                 <li key={cop.id} className="flex items-center gap-2 rounded-xl border border-white/5 bg-ink-900/50 px-3 py-2.5">
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-blue-500/15 text-base">{cop.avatar}</span>
+                  <span className="grid h-8 w-8 place-items-center rounded-full border border-blue-400/30 bg-blue-500/15 text-base shadow-[0_0_16px_-6px_rgba(96,165,250,0.9)]">
+                    {cop.avatar}
+                  </span>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold text-white">{cop.username}</div>
                     <div className="text-[11px] text-slate-500">
@@ -147,7 +163,14 @@ export function ThievesDashboard({ room, now, fix, onAbility, busyAbility }: Thi
 
       <div className="space-y-4">
         <Card>
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Abilities</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+              Abilities
+            </h2>
+            <span className="font-display text-[8px] font-bold uppercase tracking-[0.18em] text-emerald-300">
+              Ghost kit
+            </span>
+          </div>
           {!room.settings.abilities ? (
             <p className="mt-2 text-xs text-slate-500">Abilities are disabled for this match.</p>
           ) : (
@@ -164,16 +187,25 @@ export function ThievesDashboard({ room, now, fix, onAbility, busyAbility }: Thi
                       : 0;
                 const active = activeUntil > now || (type === "decoy" && Boolean(me?.decoyActive));
                 return (
-                  <div key={type} className="rounded-xl border border-white/5 bg-ink-900/50 p-3">
+                  <div
+                    key={type}
+                    className={`rounded-xl border p-3 transition-all ${
+                      active
+                        ? "border-emerald-400/45 bg-emerald-500/[0.08] shadow-[0_0_30px_-14px_rgba(163,255,94,0.9)]"
+                        : "border-white/[0.07] bg-ink-900/50 hover:border-white/15"
+                    }`}
+                  >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{meta.icon}</span>
+                      <div className="flex items-center gap-2.5">
+                        <span className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-ink-950/60 text-base">
+                          {meta.icon}
+                        </span>
                         <span className="text-sm font-semibold text-white">{meta.label}</span>
                         {active && <Badge tone="green">ACTIVE</Badge>}
                       </div>
                       <Button
                         size="sm"
-                        variant="secondary"
+                        variant={active ? "thief" : "secondary"}
                         disabled={isOut || cooldownLeft > 0 || busyAbility === type}
                         onClick={() => onAbility(type)}
                       >
@@ -186,7 +218,15 @@ export function ThievesDashboard({ room, now, fix, onAbility, busyAbility }: Thi
                               : "Use"}
                       </Button>
                     </div>
-                    <p className="mt-1 text-[11px] text-slate-500">
+                    <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                      <div
+                        className={`h-full rounded-full transition-[width] duration-300 ${
+                          active ? "bg-emerald-400" : "bg-white/25"
+                        }`}
+                        style={{ width: `${100 - Math.min(100, (cooldownLeft / meta.cooldownMs) * 100)}%` }}
+                      />
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-slate-500">
                       {meta.desc}
                       {active && activeUntil > now ? ` Active for ${formatClock(activeUntil - now)}.` : ""}
                     </p>

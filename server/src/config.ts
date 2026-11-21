@@ -21,6 +21,7 @@ export const config = {
     .map((s) => s.trim())
     .filter(Boolean),
   dataDir: process.env.DATA_DIR || path.join(__dirname, "..", "data"),
+  hasPersistentDataDir: Boolean(process.env.DATA_DIR),
   databaseUrl: process.env.DATABASE_URL,
   databaseSsl: process.env.DATABASE_SSL === "true",
   isProd: process.env.NODE_ENV === "production",

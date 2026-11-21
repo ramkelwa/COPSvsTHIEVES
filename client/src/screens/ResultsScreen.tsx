@@ -54,7 +54,7 @@ export function ResultsScreen() {
   if (!results) {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
-        <h1 className="text-xl font-bold text-white">Results unavailable</h1>
+        <h1 className="font-display text-xl font-bold uppercase tracking-[0.04em] text-white">Results unavailable</h1>
         <p className="mt-2 text-sm text-slate-400">{error ?? "This match result has expired."}</p>
         <Button className="mt-4" onClick={() => navigate("/dashboard")}>
           Back to dashboard
@@ -77,27 +77,74 @@ export function ResultsScreen() {
       />
 
       <Card
-        className={`mb-4 text-center ${
-          policeWon ? "border-blue-500/40 bg-blue-500/10" : thievesWon ? "border-emerald-500/40 bg-emerald-500/10" : ""
+        className={`animate-rise mb-4 overflow-hidden text-center ${
+          policeWon ? "border-blue-400/40" : thievesWon ? "border-emerald-400/40" : "border-white/15"
         }`}
       >
-        <div className="text-5xl">{policeWon ? "🚔" : thievesWon ? "🥷" : "🏁"}</div>
-        <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
-          {policeWon ? "Police win!" : thievesWon ? "Thieves win!" : "Match ended"}
-        </h2>
-        <p className="mt-1 text-sm text-slate-300">{REASONS[results.reason]}</p>
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400">
-          <span>
-            Longest survival <span className="font-semibold text-slate-200">{formatClock(longestSurvival)}</span>
-          </span>
-          <span>
-            Players <span className="font-semibold text-slate-200">{results.players.length}</span>
-          </span>
+        <div
+          className={`pointer-events-none absolute inset-0 ${
+            policeWon
+              ? "bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.35),transparent_65%)]"
+              : thievesWon
+                ? "bg-[radial-gradient(circle_at_50%_0%,rgba(52,211,153,0.35),transparent_65%)]"
+                : "bg-[radial-gradient(circle_at_50%_0%,rgba(148,163,184,0.2),transparent_65%)]"
+          }`}
+        />
+        <div className="relative">
+          <p
+            className={`font-display text-[9px] font-bold uppercase tracking-[0.32em] ${
+              policeWon ? "text-blue-300" : thievesWon ? "text-emerald-300" : "text-slate-400"
+            }`}
+          >
+            // Match complete
+          </p>
+          <div
+            className={`mx-auto mt-4 grid h-24 w-24 animate-float place-items-center rounded-full border text-5xl ${
+              policeWon
+                ? "border-blue-400/40 bg-blue-500/10 shadow-[0_0_60px_-10px_rgba(96,165,250,0.9)]"
+                : thievesWon
+                  ? "border-emerald-400/40 bg-emerald-500/10 shadow-[0_0_60px_-10px_rgba(163,255,94,0.9)]"
+                  : "border-white/20 bg-white/5"
+            }`}
+          >
+            {policeWon ? "🚔" : thievesWon ? "🥷" : "🏁"}
+          </div>
+          <h2 className="font-display mt-5 text-3xl font-black uppercase tracking-[0.04em] sm:text-4xl">
+            {policeWon ? (
+              <span className="bg-[linear-gradient(100deg,#e0f2fe,#60a5fa_60%,#818cf8)] bg-clip-text text-transparent">
+                Police win!
+              </span>
+            ) : thievesWon ? (
+              <span className="text-gradient">Thieves win!</span>
+            ) : (
+              <span className="text-white">Match ended</span>
+            )}
+          </h2>
+          <p className="mt-2 text-sm text-slate-300">{REASONS[results.reason]}</p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <span className="font-display rounded-md border border-white/10 bg-ink-950/50 px-2.5 py-1 text-[8px] uppercase tracking-[0.16em] text-slate-300">
+              Longest survival <span className="text-slate-100">{formatClock(longestSurvival)}</span>
+            </span>
+            <span className="font-display rounded-md border border-white/10 bg-ink-950/50 px-2.5 py-1 text-[8px] uppercase tracking-[0.16em] text-slate-300">
+              Players <span className="text-slate-100">{results.players.length}</span>
+            </span>
+            {youWon !== undefined && (
+              <span
+                className={`font-display rounded-md border px-2.5 py-1 text-[8px] uppercase tracking-[0.16em] ${
+                  youWon
+                    ? "border-emerald-400/35 bg-emerald-500/10 text-emerald-300"
+                    : "border-rose-400/35 bg-rose-500/10 text-rose-300"
+                }`}
+              >
+                {youWon ? "Your team won" : "Your team lost"}
+              </span>
+            )}
+          </div>
         </div>
       </Card>
 
       <Card className="mb-4 overflow-hidden p-0">
-        <div className="grid grid-cols-[1.4fr_0.8fr_0.7fr_0.8fr_0.7fr] gap-2 border-b border-white/10 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+        <div className="font-display grid grid-cols-[1.4fr_0.8fr_0.7fr_0.8fr_0.7fr] gap-2 border-b border-white/10 px-4 py-2.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-slate-500">
           <span>Player</span>
           <span>Role</span>
           <span className="text-right">Caps</span>
@@ -109,7 +156,7 @@ export function ResultsScreen() {
           .map((p) => (
             <div
               key={p.id}
-              className={`grid grid-cols-[1.4fr_0.8fr_0.7fr_0.8fr_0.7fr] items-center gap-2 border-b border-white/5 px-4 py-2.5 text-sm last:border-0 ${
+              className={`grid grid-cols-[1.4fr_0.8fr_0.7fr_0.8fr_0.7fr] items-center gap-2 border-b border-white/5 px-4 py-2.5 text-sm transition-colors last:border-0 hover:bg-white/[0.03] ${
                 p.id === user?.id ? "bg-cyan-500/[0.06]" : ""
               }`}
             >

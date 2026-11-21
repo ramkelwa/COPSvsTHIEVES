@@ -50,7 +50,7 @@ export function LeaderboardScreen() {
         </Card>
       ) : (
         <Card className="overflow-hidden p-0">
-          <div className="grid grid-cols-[36px_1.5fr_0.7fr_0.7fr_0.8fr_0.9fr] gap-2 border-b border-white/10 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <div className="font-display grid grid-cols-[36px_1.5fr_0.7fr_0.7fr_0.8fr_0.9fr] gap-2 border-b border-white/10 px-4 py-2.5 text-[8px] font-semibold uppercase tracking-[0.16em] text-slate-500">
             <span>#</span>
             <span>Player</span>
             <span className="text-right">Wins</span>
@@ -63,15 +63,25 @@ export function LeaderboardScreen() {
             return (
               <div
                 key={row.id}
-                className={`grid grid-cols-[36px_1.5fr_0.7fr_0.7fr_0.8fr_0.9fr] items-center gap-2 border-b border-white/5 px-4 py-2.5 text-sm last:border-0 ${
-                  isMe ? "bg-cyan-500/[0.07]" : ""
+                className={`grid grid-cols-[36px_1.5fr_0.7fr_0.7fr_0.8fr_0.9fr] items-center gap-2 border-b border-white/5 px-4 py-2.5 text-sm transition-colors last:border-0 hover:bg-white/[0.03] ${
+                  isMe
+                    ? "bg-cyan-500/[0.07]"
+                    : row.rank <= 3
+                      ? "bg-[linear-gradient(90deg,rgba(251,191,36,0.07),transparent_70%)]"
+                      : ""
                 }`}
               >
-                <span className={`font-mono text-xs ${row.rank <= 3 ? "text-amber-300" : "text-slate-500"}`}>
+                <span
+                  className={`font-display text-xs font-bold ${
+                    row.rank <= 3 ? "text-amber-300 text-glow-lime" : "text-slate-500"
+                  }`}
+                >
                   {row.rank <= 3 ? ["🥇", "🥈", "🥉"][row.rank - 1] : row.rank}
                 </span>
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="text-base">{row.avatar}</span>
+                  <span className="grid h-7 w-7 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-sm">
+                    {row.avatar}
+                  </span>
                   <span className="truncate font-medium text-white">
                     {row.username}
                     {isMe && <span className="ml-1 text-[10px] text-cyan-300">YOU</span>}

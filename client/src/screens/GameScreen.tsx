@@ -147,23 +147,85 @@ export function GameScreen() {
     : 0;
   const inHeadStart = headStartEnds > now;
 
+  const totalMs = room.settings.durationSec * 1000;
+  const timePct = totalMs > 0 ? Math.max(0, Math.min(100, (endsIn / totalMs) * 100)) : 0;
+  const critical = timePct <= 20;
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge tone={isPolice ? "blue" : "green"}>{isPolice ? "🚔 POLICE" : "🥷 THIEF"}</Badge>
-          <span className="text-xs text-slate-500">Room {room.code}</span>
-          {inHeadStart && <Badge tone="amber">Head start {formatClock(headStartEnds - now)}</Badge>}
-          {!geoSupported && <Badge tone="red">No GPS support</Badge>}
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="text-[10px] uppercase tracking-wider text-slate-500">Time left</div>
-            <div className="font-mono text-lg font-bold text-white">{formatClock(endsIn)}</div>
+      <div
+        className={`panel hud-corners relative overflow-hidden p-4 ${
+          isPolice ? "border-blue-400/30" : "border-emerald-400/30"
+        }`}
+        style={{ ["--hud-corner" as string]: isPolice ? "rgba(96,165,250,0.75)" : "rgba(163,255,94,0.75)" }}
+      >
+        <div
+          className={`pointer-events-none absolute inset-0 ${
+            isPolice
+              ? "bg-[linear-gradient(110deg,rgba(37,99,235,0.16),transparent_55%)]"
+              : "bg-[linear-gradient(110deg,rgba(52,211,153,0.16),transparent_55%)]"
+          }`}
+        />
+
+        <div className="relative flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span
+              className={`font-display inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] ${
+                isPolice
+                  ? "border-blue-400/45 bg-blue-500/15 text-blue-100 shadow-[0_0_26px_-10px_rgba(96,165,250,0.9)]"
+                  : "border-emerald-400/45 bg-emerald-500/15 text-emerald-100 shadow-[0_0_26px_-10px_rgba(163,255,94,0.9)]"
+              }`}
+            >
+              <span className="text-base leading-none">{isPolice ? "🚔" : "🥷"}</span>
+              {isPolice ? "Police" : "Thief"}
+            </span>
+            <span className="rounded-md border border-white/10 bg-ink-950/60 px-2 py-1 font-mono text-[10px] tracking-[0.22em] text-slate-300">
+              {room.code}
+            </span>
+            <span className="flex items-center gap-1.5 rounded-md border border-white/10 bg-ink-950/60 px-2 py-1">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  fix ? "animate-pulse bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" : "bg-amber-400"
+                }`}
+              />
+              <span className="font-display text-[8px] font-bold uppercase tracking-[0.16em] text-slate-300">
+                {fix ? "GPS lock" : "Acquiring"}
+              </span>
+            </span>
+            {inHeadStart && <Badge tone="amber">Head start {formatClock(headStartEnds - now)}</Badge>}
+            {!geoSupported && <Badge tone="red">No GPS support</Badge>}
+            {me.status !== "alive" && <Badge tone="red">Spectating</Badge>}
           </div>
-          <Button size="sm" variant="ghost" onClick={leave}>
-            Leave
-          </Button>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="font-display text-[8px] font-bold uppercase tracking-[0.24em] text-slate-500">
+                Time left
+              </div>
+              <div
+                className={`font-display text-2xl font-black leading-none tracking-wider tabular-nums sm:text-3xl ${
+                  critical ? "text-rose-300 text-glow-rose animate-pulse" : "text-white"
+                }`}
+              >
+                {formatClock(endsIn)}
+              </div>
+            </div>
+            <Button size="sm" variant="ghost" onClick={leave}>
+              Leave
+            </Button>
+          </div>
+        </div>
+
+        <div className="relative mt-3.5 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+          <div
+            className={`h-full rounded-full transition-[width] duration-500 ${
+              critical
+                ? "bg-[linear-gradient(90deg,#fb7185,#e11d48)]"
+                : "bg-[linear-gradient(90deg,#22d3ee,#a3ff5e)]"
+            }`}
+            style={{ width: `${timePct}%` }}
+          />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent)] animate-shimmer" />
         </div>
       </div>
 
@@ -179,17 +241,22 @@ export function GameScreen() {
       {actionError && <Alert tone="error">{actionError}</Alert>}
 
       {outside && (
-        <div className="rounded-xl border border-rose-500/50 bg-rose-500/15 px-4 py-3">
+        <div className="animate-rise relative overflow-hidden rounded-xl border border-rose-400/50 bg-[linear-gradient(110deg,rgba(225,29,72,0.28),rgba(225,29,72,0.1))] px-4 py-3 shadow-[0_0_40px_-18px_rgba(244,63,94,0.9)]">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold text-rose-100">You are outside the play area!</span>
-            <span className="font-mono text-lg font-bold text-rose-100">{formatClock(graceEndsAt - now)}</span>
+            <span className="font-display flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-rose-50">
+              <span className="h-2 w-2 animate-ping rounded-full bg-rose-300" />
+              Outside the play area
+            </span>
+            <span className="font-display text-2xl font-black tabular-nums text-rose-50">
+              {formatClock(graceEndsAt - now)}
+            </span>
           </div>
           <p className="mt-1 text-xs text-rose-100/80">Return inside the boundary before the timer ends or you are OUT.</p>
         </div>
       )}
 
       {me.status !== "alive" && (
-        <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+        <div className="rounded-xl border border-rose-400/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
           You are OUT of this match. You can spectate the rest of the round.
         </div>
       )}
@@ -215,27 +282,68 @@ export function GameScreen() {
       </p>
 
       {revealVisible && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-ink-950/95 p-5 backdrop-blur">
+        <div className="fixed inset-0 z-50 grid place-items-center overflow-hidden bg-ink-950/95 p-5 backdrop-blur-md">
+          <div className="pointer-events-none absolute inset-0 grid-fade opacity-50" />
           <div
-            className={`w-full max-w-sm rounded-3xl border p-7 text-center ${
-              isPolice ? "border-blue-500/40 bg-blue-500/10" : "border-emerald-500/40 bg-emerald-500/10"
+            className={`animate-sweep pointer-events-none absolute h-[56rem] w-[56rem] rounded-full opacity-25 ${
+              isPolice
+                ? "bg-[conic-gradient(from_0deg,rgba(96,165,250,0.75),transparent_30%)]"
+                : "bg-[conic-gradient(from_0deg,rgba(163,255,94,0.7),transparent_30%)]"
             }`}
+          />
+          <div
+            className={`panel hud-corners animate-rise relative w-full max-w-sm overflow-hidden p-7 text-center ${
+              isPolice ? "border-blue-400/40" : "border-emerald-400/40"
+            }`}
+            style={{ ["--hud-corner" as string]: isPolice ? "rgba(96,165,250,0.9)" : "rgba(163,255,94,0.9)" }}
           >
-            <div className="text-6xl">{isPolice ? "🚔" : "🥷"}</div>
-            <h2 className="mt-4 text-2xl font-black tracking-tight text-white">
-              {isPolice ? "You are POLICE" : "You are a THIEF"}
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-slate-300">
-              {isPolice
-                ? `Scan every ${room.settings.scanCooldownSec}s to find thieves, then get within ${room.settings.captureRadiusM} m to capture them.`
-                : `Stay inside the boundary and survive until the timer runs out. Police reveal their last-known position every ${room.settings.policeRevealSec}s.`}
-            </p>
-            <p className="mt-3 text-[11px] text-slate-400">
-              Your role is fixed for this match. GPS sharing starts now.
-            </p>
-            <Button className="mt-5 w-full" size="lg" onClick={() => setRevealVisible(false)}>
-              Enter the field
-            </Button>
+            <div
+              className={`pointer-events-none absolute inset-0 ${
+                isPolice
+                  ? "bg-[radial-gradient(circle_at_50%_0%,rgba(37,99,235,0.35),transparent_65%)]"
+                  : "bg-[radial-gradient(circle_at_50%_0%,rgba(52,211,153,0.35),transparent_65%)]"
+              }`}
+            />
+            <div className="relative">
+              <div
+                className={`font-display text-[9px] font-bold uppercase tracking-[0.32em] ${
+                  isPolice ? "text-blue-300" : "text-emerald-300"
+                }`}
+              >
+                // Role assigned
+              </div>
+              <div
+                className={`mx-auto mt-5 grid h-24 w-24 place-items-center rounded-full border text-5xl ${
+                  isPolice
+                    ? "border-blue-400/40 bg-blue-500/10 shadow-[0_0_60px_-10px_rgba(96,165,250,0.8)]"
+                    : "border-emerald-400/40 bg-emerald-500/10 shadow-[0_0_60px_-10px_rgba(163,255,94,0.8)]"
+                }`}
+              >
+                {isPolice ? "🚔" : "🥷"}
+              </div>
+              <h2 className="font-display mt-5 text-3xl font-black uppercase tracking-[0.04em] text-white">
+                {isPolice ? (
+                  <>
+                    You are <span className="text-gradient-hot">Police</span>
+                  </>
+                ) : (
+                  <>
+                    You are a <span className="text-gradient">Thief</span>
+                  </>
+                )}
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                {isPolice
+                  ? `Scan every ${room.settings.scanCooldownSec}s to find thieves, then get within ${room.settings.captureRadiusM} m to capture them.`
+                  : `Stay inside the boundary and survive until the timer runs out. Police reveal their last-known position every ${room.settings.policeRevealSec}s.`}
+              </p>
+              <p className="font-display mt-4 text-[8px] uppercase tracking-[0.2em] text-slate-500">
+                Role locked for this match · GPS sharing starts now
+              </p>
+              <Button className="mt-6 w-full" size="lg" onClick={() => setRevealVisible(false)}>
+                Enter the field
+              </Button>
+            </div>
           </div>
         </div>
       )}
